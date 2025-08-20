@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical Chatbot</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-image: url('https://images.squarespace-cdn.com/content/v1/5aa96c579772aea9adaa2ef7/295bd613-d748-4a18-9b91-c04a725f7f06/MedicalTechnologyExamples_124.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #f8f9fa;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 700px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid #6c757d;
+        }
+
+        header {
+            background-color: rgba(0, 123, 255, 0.8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 500;
+            border-bottom: 1px solid #5499ff;
+        }
+
+        .chat-window {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: rgba(0, 0, 0, 0.3); /* Semi-transparent overlay */
+            background-image: url('https://www.transparenttextures.com/patterns/asfalt.png');
+            background-repeat: repeat;
+            color: #f8f9fa; /* Lighter text for the chat window */
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            word-wrap: break-word;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #495057;
+            color: #d1ecf1;
+            border-bottom-right-radius: 4px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: #343a40;
+            color: #e9ecef;
+            border-bottom-left-radius: 4px;
+        }
+
+        .input-area {
+            display: flex;
+            padding: 20px;
+            border-top: 1px solid #6c757d;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        #user-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: 1px solid #555;
+            border-radius: 25px;
+            outline: none;
+            font-size: 1rem;
+            color: #f8f9fa;
+            background-color: rgba(0, 0, 0, 0.3);
+            transition: border-color 0.3s;
+        }
+
+        #user-input:focus {
+            border-color: #007bff;
+        }
+
+        #send-button {
+            padding: 12px 25px;
+            margin-left: 10px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        #send-button:hover {
+            background-color: #0056b3;
+        }
+
+        #send-button:active {
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <header>Clinical Chatbot</header>
+        <div class="chat-window" id="chat-window">
+            <div class="message bot-message">Hello! I am a clinical assistant. How can I help you today?</div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message here...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputField = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const chatWindow = document.getElementById('chat-window');
+
+            function sendMessage() {
+                const query = inputField.value.trim();
+                if (query) {
+                    const userMessage = document.createElement('div');
+                    userMessage.className = 'message user-message';
+                    userMessage.textContent = query;
+                    chatWindow.appendChild(userMessage);
+
+                    chatWindow.scrollTop = chatWindow.scrollHeight;
+
+                    inputField.value = '';
+                    sendButton.disabled = true;
+
+                    fetch('/api/chat', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ query: query })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const botMessage = document.createElement('div');
+                        botMessage.className = 'message bot-message';
+                        if (data.response) {
+                            botMessage.textContent = data.response;
+                        } else if (data.error) {
+                            botMessage.textContent = `Error: ${data.error}`;
+                            botMessage.style.color = 'red';
+                        }
+                        chatWindow.appendChild(botMessage);
+                        
+                        chatWindow.scrollTop = chatWindow.scrollHeight;
+                        sendButton.disabled = false;
+                    })
+                    .catch(error => {
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'message bot-message';
+                        errorMessage.textContent = 'Network error. Please try again.';
+                        errorMessage.style.color = 'red';
+                        chatWindow.appendChild(errorMessage);
+                        sendButton.disabled = false;
+                    });
+                }
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            inputField.addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
