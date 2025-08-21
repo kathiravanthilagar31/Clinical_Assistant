@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
 
 env:
-  RESOURCE_GROUP: 'clinical-chatbot'
-  CONTAINER_APP_NAME: 'clinicalapp'
-  CONTAINER_REGISTRY: 'clinicalbot.azurecr.io'
-  IMAGE_NAME: 'clinicalbot'
+  RESOURCE_GROUP: 'Your Resource name here'
+  CONTAINER_APP_NAME: 'your container app name here'
+  CONTAINER_REGISTRY: 'your container registry here'
+  IMAGE_NAME: 'your image name here'
 
 jobs:
   build:
@@ -52,4 +52,5 @@ jobs:
             az containerapp update \
               --name ${{ env.CONTAINER_APP_NAME }} \
               --resource-group ${{ env.RESOURCE_GROUP }} \
+
               --image ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
