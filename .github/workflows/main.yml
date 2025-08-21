@@ -63,21 +63,22 @@ jobs:
           docker push ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
   deploy:
-    permissions:
-      contents: none
-    runs-on: ubuntu-latest
-    needs: buildImage
-    steps:
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.CLINICALBOT_AZURE_CREDENTIALS }}
+      permissions:
+        contents: none
+      runs-on: ubuntu-latest
+      needs: buildImage
+      steps:
+        - name: Azure Login
+          uses: azure/login@v1
+          with:
+            creds: ${{ secrets.CLINICALBOT_AZURE_CREDENTIALS }}
 
-      - name: Deploy to container app
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          containerAppName: ${{ env.CONTAINER_APP_NAME }}
-          resourceGroup: ${{ env.RESOURCE_GROUP }}
-          imageToDeploy: ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          environmentVariables: |
-            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+        - name: Deploy to container app using Azure CLI
+          uses: azure/cli@v1
+          with:
+            inlineScript: |
+              az containerapp update \
+                --name ${{ env.CONTAINER_APP_NAME }} \
+                --resource-group ${{ env.RESOURCE_GROUP }} \
+                --image ${{ env.CONTAINER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+                --set-env-vars OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}"
