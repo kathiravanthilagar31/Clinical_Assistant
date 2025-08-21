@@ -1,0 +1,45 @@
+name: Trigger auto deployment for clinicalapp
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/clinicalapp-AutoDeployTrigger-4cc131d5-b106-478a-bd1c-e4a444cb7c1f.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.CLINICALAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: clinicalbot.azurecr.io
+          registryUsername: ${{ secrets.CLINICALAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CLINICALAPP_REGISTRY_PASSWORD }}
+          containerAppName: clinicalapp
+          resourceGroup: clinical-chatbot
+          imageToBuild: clinicalbot.azurecr.io/clinicalapp:${{ github.sha }}
+          
+            
+
+     
+
