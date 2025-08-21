@@ -1,26 +1,40 @@
+name: Trigger auto deployment for clinicalbot
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/clinicalbot-AutoDeployTrigger-3090ffb9-8e68-4413-bdcc-c014fe468b2b.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-    
-    # 1. Log in to Azure using the Service Principal
-    - name: Log in to Azure
-      uses: azure/login@v1
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
 
-    # 2. Log in to your Azure Container Registry
-    - name: Log in to ACR
-      uses: azure/docker-login@v1
-      with:
-        login-server: clinicalapp.azurecr.io
-        username: ${{ secrets.AZURE_CLIENT_ID }}
-        password: ${{ secrets.AZURE_CLIENT_SECRET }}
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.CLINICALBOT_AZURE_CREDENTIALS }}
 
-    # 3. Build and push your Docker image
-    - name: Build and push image
-      run: |
-        docker build . -t clinicalapp.azurecr.io/my-app:${{ github.sha }}
-        docker push clinicalapp.azurecr.io/my-app:${{ github.sha }}
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: clinicalapp.azurecr.io
+          registryUsername: ${{ secrets.CLINICALBOT_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CLINICALBOT_REGISTRY_PASSWORD }}
+          containerAppName: clinicalbot
+          resourceGroup: DefaultResourceGroup-null
+          imageToBuild: clinicalapp.azurecr.io/clinicalbot:${{ github.sha }}
