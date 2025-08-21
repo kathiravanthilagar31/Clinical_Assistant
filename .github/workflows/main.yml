@@ -37,4 +37,4 @@ jobs:
           registryPassword: ${{ secrets.CLINICALBOT_REGISTRY_PASSWORD }}
           containerAppName: clinicalbot
           resourceGroup: DefaultResourceGroup-null
-          imageToBuild: clinicalapp.azurecr.io/clinicalbot:${{ github.sha }}
+          imageToBuild: clinicalapp.azurecr.io/clinicalbot:latest
