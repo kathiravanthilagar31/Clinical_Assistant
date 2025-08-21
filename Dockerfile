@@ -20,8 +20,6 @@ RUN chown -R appuser:appuser /app
 # Switch to the new user before running the application
 USER appuser
 
-# Expose the port the app will run on
-EXPOSE 8000
-
-# Set the command to run the app using Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]
+# Set the command to run the app using Waitress
+CMD ["waitress-serve", "--listen=0.0.0.0:8080", "app:app"]
+EXPOSE 8080
