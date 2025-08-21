@@ -29,13 +29,12 @@ jobs:
         uses: azure/container-apps-deploy-action@v2
         with:
           appSourcePath: ${{ github.workspace }}
-          _dockerfilePathKey_: _dockerfilePath_
-          _targetLabelKey_: _targetLabel_
+          dockerfilePath: Dockerfile
           registryUrl: clinicalapp.azurecr.io
           registryUsername: ${{ secrets.CLINICALBOT_REGISTRY_USERNAME }}
           registryPassword: ${{ secrets.CLINICALBOT_REGISTRY_PASSWORD }}
           containerAppName: clinicalbot
-          resourceGroup: DefaultResourceGroup-null
+          resourceGroup: clinical-chatbot
           imageToBuild: clinicalapp.azurecr.io/clinicalbot:latest
           environmentVariables: |
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
