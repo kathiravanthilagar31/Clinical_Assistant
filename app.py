@@ -23,14 +23,10 @@ def chat_endpoint():
     if not user_query:
         return jsonify({"error": "No query provided."}), 400
 
-    # --- TEMPORARILY REMOVE TRY...EXCEPT FOR DEBUGGING ---
-    # The actual error will now print in your terminal
-    # Also, ensure you use .chat() for the ChatEngine
-    response = query_engine.chat(user_query) # Changed from .query() to .chat()
+
+    # Use .chat() for the ChatEngine
+    response = query_engine.chat(user_query) 
     return jsonify({"response": str(response)})
-    # --- END DEBUGGING MODIFICATION ---
 
 if __name__ == '__main__':
-    # You must set the API key in your terminal before running
-    # export OPENAI_API_KEY="your_api_key_here"
     app.run(debug=False, host="0.0.0.0", port=8080)
