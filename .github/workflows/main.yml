@@ -9,8 +9,8 @@ on:
 env:
   RESOURCE_GROUP: 'clinical-chatbot'
   CONTAINER_APP_NAME: 'clinicalapp'
-  CONTAINER_REGISTRY: 'clinicalapp.azurecr.io'
-  IMAGE_NAME: 'clinicalapp'
+  CONTAINER_REGISTRY: 'clinicalbot.azurecr.io'
+  IMAGE_NAME: 'clinicalbot'
 
 jobs:
   build:
