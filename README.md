@@ -1,4 +1,4 @@
-# Medical Research Data Processing Workspace
+# Medical Chatbot
 
 This repository provides tools and scripts for processing, storing, and analyzing medical research data, including PDF parsing, database management, and a web interface.
 
