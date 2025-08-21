@@ -1,21 +1,6 @@
-name: Trigger auto deployment for clinicalbot
-# When this action will be executed
-on:
-  # Automatically trigger it when detected changes in repo
-  push:
-    branches: 
-      [ main ]
-    paths:
-    - '**'
-    - '.github/workflows/clinicalbot-AutoDeployTrigger-3090ffb9-8e68-4413-bdcc-c014fe468b2b.yml'
-
-  # Allow manual trigger 
-  workflow_dispatch:
-      
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout to the branch
         uses: actions/checkout@v2
@@ -25,16 +10,23 @@ jobs:
         with:
           creds: ${{ secrets.CLINICALBOT_AZURE_CREDENTIALS }}
 
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: clinicalapp.azurecr.io
+          username: ${{ secrets.CLINICALBOT_REGISTRY_USERNAME }}
+          password: ${{ secrets.CLINICALBOT_REGISTRY_PASSWORD }}
+
       - name: Build and push container image to registry
+        run: |
+          docker build . -t clinicalapp.azurecr.io/clinicalbot:latest
+          docker push clinicalapp.azurecr.io/clinicalbot:latest
+
+      - name: Deploy to Azure Container App
         uses: azure/container-apps-deploy-action@v2
         with:
-          appSourcePath: ${{ github.workspace }}
-          dockerfilePath: Dockerfile
-          registryUrl: clinicalapp.azurecr.io
-          registryUsername: ${{ secrets.CLINICALBOT_REGISTRY_USERNAME }}
-          registryPassword: ${{ secrets.CLINICALBOT_REGISTRY_PASSWORD }}
           containerAppName: clinicalbot
-          resourceGroup: clinical-chatbot
-          imageToBuild: clinicalapp.azurecr.io/clinicalbot:latest
+          resourceGroup: clinical-chatbot # IMPORTANT: Update this!
+          imageToDeploy: clinicalapp.azurecr.io/clinicalbot:latest
           environmentVariables: |
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
